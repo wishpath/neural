@@ -105,27 +105,27 @@ public class Network {
     MinScoreAddress minScoreAddress = null;
     double tempScore = Double.MAX_VALUE;
 
-    for (int layerIndex = 0; layerIndex < layers.size() - 2 ; layerIndex++) { //last 2 layers no!
+    for (int layerIndex = 0; layerIndex < layers.size(); layerIndex++) {
       //System.out.println("Layer: " + layerIndex);
       for (int nodeIndex = 0; nodeIndex < layers.get(layerIndex).size(); nodeIndex++) {
         //System.out.println("Node: " + nodeIndex);
         Node node = layers.get(layerIndex).get(nodeIndex);
 
-        node.increaseBias(STEP_COEFFICIENT);
-        tempScore = getAllPicsScore(i, batchSize);
-        if (tempScore < minScore) {
-          minScore = tempScore;
-          minScoreAddress = new MinScoreAddress(layerIndex, nodeIndex, Boolean.TRUE);
-        }
-
-        node.doubleDecreaseBias(STEP_COEFFICIENT);
-        tempScore = getAllPicsScore(i, batchSize);
-        if (tempScore < minScore) {
-          minScore = tempScore;
-          minScoreAddress = new MinScoreAddress(layerIndex, nodeIndex, Boolean.FALSE);
-        }
-
-        node.increaseBias(STEP_COEFFICIENT);
+//        node.increaseBias(STEP_COEFFICIENT);
+//        tempScore = getAllPicsScore(i, batchSize);
+//        if (tempScore < minScore) {
+//          minScore = tempScore;
+//          minScoreAddress = new MinScoreAddress(layerIndex, nodeIndex, Boolean.TRUE);
+//        }
+//
+//        node.doubleDecreaseBias(STEP_COEFFICIENT);
+//        tempScore = getAllPicsScore(i, batchSize);
+//        if (tempScore < minScore) {
+//          minScore = tempScore;
+//          minScoreAddress = new MinScoreAddress(layerIndex, nodeIndex, Boolean.FALSE);
+//        }
+//
+//        node.increaseBias(STEP_COEFFICIENT);
 
         for (int weightIndex = 0; weightIndex < node.getWeightsSize(); weightIndex++) {
           //System.out.println("weight: " + weightIndex);

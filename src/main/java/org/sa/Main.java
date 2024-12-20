@@ -32,11 +32,11 @@ public class Main {
 
   private static void iterateImprovements(Network network) {
     network.loadNetworkState();
-    int batchSize = 20;
+    int batchSize = 25;
     for (int i = batchSize; i < PICTURES.size(); i += batchSize) {
       network.iterateLayersManageVariables(i, batchSize);
+      network.saveNetworkState();
       if (i % (ITERATION_CHECKPOINT_INTERVAL * batchSize) == 0) {
-        network.saveNetworkState();
         if (AppStopChecker.shouldStopApp()) {
           System.out.println("app stopped gracefully");
           break;
