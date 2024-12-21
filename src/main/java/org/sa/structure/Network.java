@@ -110,6 +110,7 @@ public class Network {
       for (int nodeIndex = 0; nodeIndex < layers.get(layerIndex).size(); nodeIndex++) {
         //System.out.println("Node: " + nodeIndex);
         Node node = layers.get(layerIndex).get(nodeIndex);
+        if (nodeIndex == 5 || nodeIndex == 7) continue;
 
 //        node.increaseBias(STEP_COEFFICIENT);
 //        tempScore = getAllPicsScore(i, batchSize);

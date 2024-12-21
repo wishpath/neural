@@ -32,7 +32,7 @@ public class Main {
 
   private static void iterateImprovements(Network network) {
     network.loadNetworkState();
-    int batchSize = 100;
+    int batchSize = 10;
     for (int i = batchSize; i < PICTURES.size(); i += batchSize) {
       network.iterateLayersManageVariables(i, batchSize);
 
