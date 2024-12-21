@@ -9,7 +9,7 @@ import java.util.List;
 public class Main {
 
 
-  public static final int ITERATION_CHECKPOINT_INTERVAL = 5;
+  public static final int ITERATION_CHECKPOINT_INTERVAL = 10;
   public static List<int[][]> PICTURES;
   public static List<Integer> LABELS;
 
@@ -32,11 +32,12 @@ public class Main {
 
   private static void iterateImprovements(Network network) {
     network.loadNetworkState();
-    int batchSize = 25;
+    int batchSize = 100;
     for (int i = batchSize; i < PICTURES.size(); i += batchSize) {
       network.iterateLayersManageVariables(i, batchSize);
-      network.saveNetworkState();
+
       if (i % (ITERATION_CHECKPOINT_INTERVAL * batchSize) == 0) {
+        network.saveNetworkState();
         if (AppStopChecker.shouldStopApp()) {
           System.out.println("app stopped gracefully");
           break;
