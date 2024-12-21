@@ -1,4 +1,4 @@
-package org.sa.structure;
+package org.sa.other;
 
 public class MinScoreAddress {
   int layerIndex;
@@ -8,17 +8,21 @@ public class MinScoreAddress {
   Integer weightIndex = null;
   Boolean weightIncreased = null;
 
-  public MinScoreAddress (int layerIndex, int nodeIndex, Boolean biasIncreased) {
+  double minScoreValue;
+
+  public MinScoreAddress (int layerIndex, int nodeIndex, Boolean biasIncreased, double minScoreValue) {
     this.layerIndex = layerIndex;
     this.nodeIndex = nodeIndex;
     this.biasIncreased = biasIncreased;
+    this.minScoreValue = minScoreValue;
   }
 
-  public MinScoreAddress (int layerIndex, int nodeIndex, Integer weightIndex, Boolean weightIncreased) {
+  public MinScoreAddress (int layerIndex, int nodeIndex, Integer weightIndex, Boolean weightIncreased, double minScoreValue) {
     this.layerIndex = layerIndex;
     this.nodeIndex = nodeIndex;
     this.weightIndex = weightIndex;
     this.weightIncreased = weightIncreased;
+    this.minScoreValue = minScoreValue;
   }
 
   public int getLayerIndex() {
@@ -50,5 +54,9 @@ public class MinScoreAddress {
         ", weightIndex=" + weightIndex +
         ", weightIncreased=" + weightIncreased +
         '}';
+  }
+
+  public double getMinScoreValue() {
+    return minScoreValue;
   }
 }

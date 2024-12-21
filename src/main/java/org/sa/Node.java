@@ -1,4 +1,4 @@
-package org.sa.structure;
+package org.sa;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,34 +68,34 @@ public class Node {
     return value;
   }
 
-  public void increaseBias(double stepCoefficient) {
-    bias *= stepCoefficient;
+  public void increaseBias() {
+    bias *= Network.STEP_COEFFICIENT;
   }
 
-  public void decreaseBias(double stepCoefficient) {
-    bias /= stepCoefficient;
+  public void decreaseBias() {
+    bias /= Network.STEP_COEFFICIENT;
   }
 
-  public void doubleDecreaseBias(double stepCoefficient) {
-    bias = (bias / stepCoefficient) / stepCoefficient;
+  public void doubleDecreaseBias() {
+    bias = (bias / Network.STEP_COEFFICIENT) / Network.STEP_COEFFICIENT;
   }
 
   public int getWeightsSize() {
     return weights.size();
   }
 
-  public void increaseWeight(int i, double stepCoefficient) {
-    double increasedWeight = weights.get(i) * stepCoefficient;
+  public void increaseWeight(int i) {
+    double increasedWeight = weights.get(i) * Network.STEP_COEFFICIENT;
     weights.set(i, increasedWeight);
   }
 
-  public void decreaseWeight(Integer weightIndex, double stepCoefficient) {
-    double decreasedWeight = weights.get(weightIndex) / stepCoefficient;
+  public void decreaseWeight(Integer weightIndex) {
+    double decreasedWeight = weights.get(weightIndex) / Network.STEP_COEFFICIENT;
     weights.set(weightIndex, decreasedWeight);
   }
 
-  public void doubleDecreaseWeight(int i, double stepCoefficient) {
-    double decreasedWeight = (weights.get(i) / stepCoefficient) / stepCoefficient;
+  public void doubleDecreaseWeight(int i) {
+    double decreasedWeight = (weights.get(i) / Network.STEP_COEFFICIENT) / Network.STEP_COEFFICIENT;
     weights.set(i, decreasedWeight);
   }
 

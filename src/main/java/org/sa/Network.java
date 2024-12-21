@@ -1,7 +1,8 @@
-package org.sa.structure;
+package org.sa;
 
-import org.sa.DataPrinter;
-import org.sa.PictureFlatter;
+import org.sa.other.DataPrinter;
+import org.sa.other.MinScoreAddress;
+import org.sa.other.PictureFlatter;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -10,23 +11,19 @@ import java.util.List;
 public class Network {
 
   public static final String NETWORK_STATE_FILEPATH = "src\\main\\java\\org\\sa\\data\\network-state";
-  private List<int[][]> pictures;
-  private List<Integer> labels;
+  public static final double STEP_COEFFICIENT = 1.1;
   private List<Node> flatPixelNodes;
   private List<Node> intermediateNodes1;
   private List<Node> intermediateNodes2;
   private List<Node> answerNodes;
-  List<List<Node>> layers;
+  private List<List<Node>> layers;
 
-  public Network(List<int[][]> pictures, List<Integer> labels) {
-    this.pictures = pictures;
-    this.labels = labels;
+  public Network() {
     initialiseNetwork();
   }
 
   private void initialiseNetwork() {
-    flatPixelNodes = PictureFlatter.flattenPicture(pictures.get(0));
-    //DataPrinter.printPicture(pictures, labels, 0);
+    flatPixelNodes = PictureFlatter.flattenPicture(0);
     intermediateNodes1 = initialiseNodeLayer(flatPixelNodes, 16);
     intermediateNodes2 = initialiseNodeLayer(intermediateNodes1, 16);
     answerNodes = initialiseNodeLayer(intermediateNodes2, 10);
@@ -40,8 +37,7 @@ public class Network {
   }
 
   public List<Node> calculateAnswerNodes(int index) {
-    flatPixelNodes = PictureFlatter.flattenPicture(pictures.get(index));
-    //DataPrinter.printPicture(pictures, labels, index);
+    flatPixelNodes = PictureFlatter.flattenPicture(index);
     calculateNodeLayer(intermediateNodes1);
     calculateNodeLayer(intermediateNodes2);
     calculateNodeLayer(answerNodes);
@@ -57,7 +53,7 @@ public class Network {
     int i = 0;
     Double score = 0.0;
     for (Node answerNode : answerNodes) {
-      double desiredNodeValue = (i == labels.get(index)) ? 1.0 : 0.0;
+      double desiredNodeValue = (i == Data.LABELS.get(index)) ? 1.0 : 0.0;
       score += getNodeScore(desiredNodeValue, answerNode.getValue());
     }
     return score;
@@ -65,12 +61,12 @@ public class Network {
 
   public Double printSinglePictureScore(int index) {
     calculateAnswerNodes(index);
-    DataPrinter.printPicture(index);
-    System.out.println("answer should be: " + labels.get(index));
+    DataPrinter.printLabeledPicture(index);
+    System.out.println("answer should be: " + Data.LABELS.get(index));
     int i = 0;
     Double score = 0.0;
     for (Node answerNode : answerNodes) {
-      double desiredNodeValue = (i == labels.get(index)) ? 1.0 : 0.0;
+      double desiredNodeValue = (i == Data.LABELS.get(index)) ? 1.0 : 0.0;
       System.out.println(i++ + ": " + answerNode.getValue() + ": " + desiredNodeValue);
       score += getNodeScore(desiredNodeValue, answerNode.getValue());
     }
@@ -82,102 +78,84 @@ public class Network {
     return Math.pow(desiredNodeValue - nodeValue, 2);
   }
 
-  public double getAllPicsScore(int index, int batchSize) {
-    //all pictures score:
+  private double getAllPicsScore(int index) {
     Double allPicsScore = 0.0;
-    for (int i = index - batchSize; i < index; i++) allPicsScore += getNetworkScore(i);
-    //System.out.println("All pictures score: " + allPicsScore);
+    for (int i = index - Main.BATCH_SIZE; i < index; i++) allPicsScore += getNetworkScore(i);
     return allPicsScore;
   }
 
-  public void iterateLayersManageVariables(int i, int batchSize) {
-    final double STEP_COEFFICIENT = 1.1;
-    double initialScore = getAllPicsScore(i, batchSize);
-    //System.out.println("initialScore: " + initialScore);
+  public void iterateLayersManageParameters(int pictureIndex) {
 
-    // [layer index]
-    // [node index]
-    // [bias: stay - 0; increase - 1; decrease - 2]
-    // [weight index]
-    // [weight: stay - 0; increase - 1; decrease - 2]
-
-    double minScore = getAllPicsScore(i, batchSize);
+    double initialScore = getAllPicsScore(pictureIndex);
     MinScoreAddress minScoreAddress = null;
     double tempScore = Double.MAX_VALUE;
 
     for (int layerIndex = 0; layerIndex < layers.size(); layerIndex++) {
-      //System.out.println("Layer: " + layerIndex);
       for (int nodeIndex = 0; nodeIndex < layers.get(layerIndex).size(); nodeIndex++) {
-        //System.out.println("Node: " + nodeIndex);
         Node node = layers.get(layerIndex).get(nodeIndex);
-
-//        node.increaseBias(STEP_COEFFICIENT);
-//        tempScore = getAllPicsScore(i, batchSize);
-//        if (tempScore < minScore) {
-//          minScore = tempScore;
-//          minScoreAddress = new MinScoreAddress(layerIndex, nodeIndex, Boolean.TRUE);
-//        }
-//
-//        node.doubleDecreaseBias(STEP_COEFFICIENT);
-//        tempScore = getAllPicsScore(i, batchSize);
-//        if (tempScore < minScore) {
-//          minScore = tempScore;
-//          minScoreAddress = new MinScoreAddress(layerIndex, nodeIndex, Boolean.FALSE);
-//        }
-//
-//        node.increaseBias(STEP_COEFFICIENT);
-
+        if (nodeIndex == 5 || nodeIndex == 7) continue;
+        minScoreAddress = getMinScoreAddressChangingBiases(pictureIndex, node, minScoreAddress, layerIndex, nodeIndex);
         for (int weightIndex = 0; weightIndex < node.getWeightsSize(); weightIndex++) {
-          //System.out.println("weight: " + weightIndex);
-
-          node.increaseWeight(weightIndex, STEP_COEFFICIENT);
-          tempScore = getAllPicsScore(i, batchSize);
-          if (tempScore < minScore) {
-            minScore = tempScore;
-            minScoreAddress = new MinScoreAddress(layerIndex, nodeIndex, Integer.valueOf(weightIndex), Boolean.TRUE);
-          }
-
-          node.doubleDecreaseWeight(weightIndex, STEP_COEFFICIENT);
-          tempScore = getAllPicsScore(i, batchSize);
-          if (tempScore < minScore) {
-            minScore = tempScore;
-            minScoreAddress = new MinScoreAddress(layerIndex, nodeIndex, Integer.valueOf(weightIndex), Boolean.FALSE);
-          }
-
-          node.increaseWeight(weightIndex, STEP_COEFFICIENT);
+          minScoreAddress = getMinScoreAddressChangingWeights(pictureIndex, node, weightIndex, minScoreAddress, layerIndex, nodeIndex);
         }
       }
     }
-
-    //double afterwardsScore = getAllPicsScore(i, batchSize);
+    applyMinScoreChanges(minScoreAddress);
     System.out.println("initialScore: " + initialScore);
-//    System.out.println("afterwardsScore:" + afterwardsScore);
-//    System.out.println("min score:" + minScore);
     System.out.println("change address: " + minScoreAddress);
-
-    applyMinScoreChanges(minScoreAddress, STEP_COEFFICIENT);
-    System.out.println("post application score: " + getAllPicsScore(i, batchSize) + "\n\n");
+    System.out.println("post application score: " + getAllPicsScore(pictureIndex) + "\n\n");
   }
 
-  private void applyMinScoreChanges(MinScoreAddress minScoreAddress, double stepCoefficient) {
+  private MinScoreAddress getMinScoreAddressChangingWeights(int i, Node node, int weightIndex,
+                                                            MinScoreAddress minScoreAddress,
+                                                            int layerIndex, int nodeIndex) {
+    double tempScore;
+    node.increaseWeight(weightIndex);
+    tempScore = getAllPicsScore(i);
+    if (tempScore < minScoreAddress.getMinScoreValue())
+      minScoreAddress = new MinScoreAddress(layerIndex, nodeIndex, Integer.valueOf(weightIndex), Boolean.TRUE, tempScore);
+    node.doubleDecreaseWeight(weightIndex);
+    tempScore = getAllPicsScore(i);
+    if (tempScore < minScoreAddress.getMinScoreValue())
+      minScoreAddress = new MinScoreAddress(layerIndex, nodeIndex, Integer.valueOf(weightIndex), Boolean.FALSE, tempScore);
+    node.increaseWeight(weightIndex);
+    return minScoreAddress;
+  }
+
+  private MinScoreAddress getMinScoreAddressChangingBiases(int pictureIndex, Node node, MinScoreAddress minScoreAddress,
+                                                           int layerIndex, int nodeIndex) {
+    double tempScore;
+    node.increaseBias();
+    tempScore = getAllPicsScore(pictureIndex);
+    if (minScoreAddress == null || tempScore < minScoreAddress.getMinScoreValue())
+      minScoreAddress = new MinScoreAddress(layerIndex, nodeIndex, Boolean.TRUE, tempScore);
+    node.doubleDecreaseBias();
+    tempScore = getAllPicsScore(pictureIndex);
+    if (tempScore < minScoreAddress.getMinScoreValue())
+      minScoreAddress = new MinScoreAddress(layerIndex, nodeIndex, Boolean.FALSE, tempScore);
+    node.increaseBias();
+    return minScoreAddress;
+  }
+
+  private void applyMinScoreChanges(MinScoreAddress minScoreAddress) {
     Node node = layers
         .get(minScoreAddress.getLayerIndex())
         .get(minScoreAddress.getNodeIndex());
-    applyBias(node, minScoreAddress, stepCoefficient);
-    applyWeight(node, minScoreAddress, stepCoefficient);
+    applyBias(node, minScoreAddress);
+    applyWeight(node, minScoreAddress);
   }
 
-  private void applyBias(Node node, MinScoreAddress minScoreAddress, double stepCoefficient) {
-    if (minScoreAddress.biasIncreased == null) return;
-    if (minScoreAddress.biasIncreased.booleanValue() == true) node.increaseBias(stepCoefficient);
-    else node.decreaseBias(stepCoefficient);
+  private void applyBias(Node node, MinScoreAddress minScoreAddress) {
+    if (minScoreAddress.getBiasIncreased() == null) return;
+    if (minScoreAddress.getBiasIncreased().booleanValue() == true) node.increaseBias();
+    else node.decreaseBias();
   }
 
-  private void applyWeight(Node node, MinScoreAddress minScoreAddress, double stepCoefficient) {
-    if (minScoreAddress.weightIncreased == null) return;
+  private void applyWeight(Node node, MinScoreAddress minScoreAddress) {
+    if (minScoreAddress.getWeightIncreased() == null) return;
     Integer weightIndex = minScoreAddress.getWeightIndex();
-    if (minScoreAddress.weightIncreased.booleanValue() == true) node.increaseWeight(weightIndex, stepCoefficient);
-    else node.decreaseWeight(weightIndex, stepCoefficient);
+    if (minScoreAddress.getWeightIncreased().booleanValue() == true) node.increaseWeight(weightIndex);
+    else node.decreaseWeight(weightIndex);
   }
 
   public void saveNetworkState() {

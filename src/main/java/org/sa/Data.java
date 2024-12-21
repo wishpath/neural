@@ -1,7 +1,5 @@
 package org.sa;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -9,7 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataLoader {
+public class Data {
 
 
   public static final int DATA_LOAD_LIMITATION_SIZE = 10000;
@@ -17,13 +15,10 @@ public class DataLoader {
   public static final int LABEL_VERIFIER = 2049;
   private static final String PICTURES_FILEPATH = "src\\main\\java\\org\\sa\\data\\t10k-images.idx3-ubyte";
   private static final String LABELS_FILEPATH = "src\\main\\java\\org\\sa\\data\\t10k-labels.idx1-ubyte";
+  public static final List<int[][]> PICTURES = readPictures();
+  public static final List<Integer> LABELS = readLabels();
 
-  public Pair<List<int[][]>, List<Integer>> loadData() throws IOException {
-    System.out.println();
-    return Pair.of(readPictures(), readLabels());
-  }
-
-  private List<int[][]> readPictures() {
+  private static List<int[][]> readPictures() {
     DataInputStream imageStream = getStream(PICTURES_FILEPATH);
     if (getInt(imageStream) != PICTURE_VERIFIER) throw new IllegalArgumentException();
     int imagesCount = getInt(imageStream);
@@ -49,11 +44,11 @@ public class DataLoader {
     return images;
   }
 
-  private List<Integer> readLabels(){
+  private static List<Integer> readLabels(){
     DataInputStream labelStream = getStream(LABELS_FILEPATH);
     if (getInt(labelStream) != LABEL_VERIFIER) throw new IllegalArgumentException();
     int labelsSize = getInt(labelStream);
-    //System.out.println("labels size: " + labelsSize);
+    System.out.println("labels size: " + labelsSize);
     List<Integer> labels = new ArrayList<>(DATA_LOAD_LIMITATION_SIZE);
     for (int i = 0; i < DATA_LOAD_LIMITATION_SIZE; i++) labels.add(getUnsignedByte(labelStream));
     return labels;

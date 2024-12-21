@@ -1,3 +1,3 @@
-no need for values while initialising
-sort pitctures by labels, add to separate lists by labels. then formulate batches by equal amounts of each of 10 digits.
-for network improvement take equal amount of pictures for each digit. remember indexes so would always take other pictures.
+• there is no need for initial value when initialising node
+• sort pictures by labels, add to separate lists by labels. then formulate batches by equal amounts of each of 10 digits.
+• for network improvement take equal amount of pictures for each digit. rotate pool of each single digit pool, or pool of correct batches.
